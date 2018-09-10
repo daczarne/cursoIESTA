@@ -1,0 +1,55 @@
+---
+title: "Reproducible Research - Notas de clase"
+author: "Daniel Czarnievicz"
+date: "Curso 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Clase 1 (20/8/2018)
+
+## Porqué Reproducible research?
+
+reproducibilidad != replicabilidad
+Reproducibilidad = mismos datos -> mismo resultados
+replicabilidad = aplicar a otro experimento con mismo resultado global (la vacuna siempre es efectividad)
+
+crisis de replicabilidad -> problema de los p valores. entender los p valores como variables aleatorias
+
+packrat y docker guardan todo el trabajo en un "pack" de R
+
+## R Markdown
+
+`echo = FALSE` parameter prevent printing of the R code.  
+`eval = FALSE` no evalua el c?digo.  
+`cache = TRUE` guarda resultados del chunk en el cache y no vuelve a generarlo.  
+
+```{r ejemplo_puntos, echo=TRUE, fig.width=3, fig.height=3, fig.align="right", fig.cap="Puntos aleatorios", fig.pos="h"}
+
+library(ggplot2)
+dat = data.frame(x=rnorm(100), y=rnorm(100))
+ggplot(dat, aes(x,y)) +
+      geom_point()
+```
+
+`xtable` para compilar pdf. 
+
+# Clase 2 (27/8/2018)
+
+## Projectos en RStudio
+
+- Organiza el trabajo en un mismo directorio.  
+- RStudio permite cambiar el directorio sin que se "rompa todo".  
+- El directorio de trabajo es el projecto mismo.  
+- Usar la librería "here".  
+
+```{r}
+library(here)
+```
+
+# Clase 3 (10/9/2018)
+
+
