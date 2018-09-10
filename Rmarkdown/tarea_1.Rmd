@@ -1,0 +1,50 @@
+---
+title: "Tarea 1"
+author: "Daniel Czarnievicz"
+date: "September 10, 2018"
+output: 
+      pdf_document:
+            number_sections: true
+geometry: margin=3cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE)
+library(tidyverse)
+library(xtable)
+```
+
+# Introducción
+
+1. Simula datos y los deja en un data.frame  
+$$N \sim Po(90) \:\:\: \text{cantidad de puntos}$$
+$$x_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
+$$y_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
+
+2. Tabla con un resumen de los datos simulados  
+      - Usa `xtable()` para la tabla  
+      - incluir un título de la tabla, que salga arriba en el documento final  
+      - incluir una etiqueta para poder referenciar la tabla en el texto  
+
+3. Completar la frase: “En la Tabla REF se observa que la mediana de las $x$ es —–”
+de forma que el valor de la mediana se complete automáticamente cuando cambian
+los datos.
+
+
+# Simulaciones y tabla
+
+```{r simdatos, cache=TRUE}
+N <- rpois(1, lambda=90)
+x_i <- runif(N, min=0, max=1)
+y_i <- runif(N, min=0, max=1)
+datos <- as_tibble(cbind(x_i, y_i))
+```
+
+```{r, results='asis', message=FALSE}
+print(xtable::xtable(summary(datos)))
+```
+
+En la Tabla REF se observa que la mediana de las $x$ es `r round(median(datos$x_i), 3)`.
+
+# Figura
+
