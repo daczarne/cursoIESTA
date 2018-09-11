@@ -5,6 +5,7 @@ date: "September 10, 2018"
 output: 
       pdf_document:
             number_sections: true
+            toc: false
 geometry: margin=3cm
 ---
 
@@ -16,11 +17,14 @@ library(xtable)
 
 # Introducción
 
-1. Simula datos y los deja en un data.frame  
+Simularemos los datos
 $$N \sim Po(90) \:\:\: \text{cantidad de puntos}$$
 $$x_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
 $$y_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
 
+Reposiitorio donde se encuentra el Rmd que genera este pdf: 
+
+<!--
 2. Tabla con un resumen de los datos simulados  
       - Usa `xtable()` para la tabla  
       - incluir un título de la tabla, que salga arriba en el documento final  
@@ -29,7 +33,7 @@ $$y_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
 3. Completar la frase: “En la Tabla REF se observa que la mediana de las $x$ es —–”
 de forma que el valor de la mediana se complete automáticamente cuando cambian
 los datos.
-
+-->
 
 # Simulaciones y tabla
 
@@ -41,10 +45,18 @@ datos <- as_tibble(cbind(x_i, y_i))
 ```
 
 ```{r, results='asis', message=FALSE}
-print(xtable::xtable(summary(datos)))
+print(xtable::xtable(summary(datos), label="a caption"))
 ```
 
 En la Tabla REF se observa que la mediana de las $x$ es `r round(median(datos$x_i), 3)`.
 
 # Figura
+
+```{r, fig.cap="Figure Caption"}
+datos %>%
+      ggplot() +
+      geom_point(aes(x_i, y_i)) +
+      labs(x="X", y="Y") +
+      theme(axis.ticks=element_blank())
+```
 
