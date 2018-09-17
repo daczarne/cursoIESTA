@@ -22,7 +22,7 @@ $$N \sim Po(90) \:\:\: \text{cantidad de puntos}$$
 $$x_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
 $$y_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
 
-Reposiitorio donde se encuentra el Rmd que genera este pdf: 
+Se puede acceder al repositorio donde se encuentra el código haciendo click [aqui](https://github.com/daczarne/rep_research/tree/master/Rmarkdown)
 
 <!--
 2. Tabla con un resumen de los datos simulados  
