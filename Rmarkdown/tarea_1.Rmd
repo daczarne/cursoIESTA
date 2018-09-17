@@ -11,6 +11,7 @@ geometry: margin=3cm
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE)
+options(xtable.comment = FALSE)
 library(tidyverse)
 library(xtable)
 ```
@@ -44,8 +45,15 @@ y_i <- runif(N, min=0, max=1)
 datos <- as_tibble(cbind(x_i, y_i))
 ```
 
-```{r, results='asis', message=FALSE}
-print(xtable::xtable(summary(datos), label="a caption"))
+```{r, results='asis', message=FALSE, echo=FALSE, comment=""}
+a <- unclass(summary(datos))
+dim(a) <- NULL
+b <- sub(":.*", "", a)
+a <- as.numeric(sub(".*:", "", a))
+dim(a) <- c(6,2)
+row.names(a) <- unique(b)
+colnames(a) <- c("X", "Y")
+print(xtable::xtable(a, caption="Resumen de las variables X e Y", digits=4), type="latex")
 ```
 
 En la Tabla REF se observa que la mediana de las $x$ es `r round(median(datos$x_i), 3)`.
