@@ -1,12 +1,15 @@
 ---
 title: "Tarea 1"
 author: "Daniel Czarnievicz"
-date: "September 10, 2018"
+date: "September 2018"
 output: 
       pdf_document:
             number_sections: true
             toc: false
+header-includes:
+      - \usepackage{float}
 geometry: margin=3cm
+fontsize: 12pt
 ---
 
 ```{r setup, include=FALSE}
@@ -18,23 +21,12 @@ library(xtable)
 
 # Introducción
 
-Simularemos los datos
-$$N \sim Po(90) \:\:\: \text{cantidad de puntos}$$
-$$x_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
-$$y_i \sim Unif(0, \, 1) \:\:\: \text{N observaciones}$$
+Simularemos los dato
+$$N\sim Po(9) \:\:\: text{cantidad d punto}$$
+$$x_i \sim Unif(0, \, ) \:\:\: N \text{ observaciones}$$
+$$y_i \sim Unif(0, \, 1) \:\:\: N \text{ observaciones}$$
 
 Se puede acceder al repositorio donde se encuentra el código haciendo click [aqui](https://github.com/daczarne/rep_research/tree/master/Rmarkdown)
-
-<!--
-2. Tabla con un resumen de los datos simulados  
-      - Usa `xtable()` para la tabla  
-      - incluir un título de la tabla, que salga arriba en el documento final  
-      - incluir una etiqueta para poder referenciar la tabla en el texto  
-
-3. Completar la frase: “En la Tabla REF se observa que la mediana de las $x$ es —–”
-de forma que el valor de la mediana se complete automáticamente cuando cambian
-los datos.
--->
 
 # Simulaciones y tabla
 
@@ -53,14 +45,19 @@ a <- as.numeric(sub(".*:", "", a))
 dim(a) <- c(6,2)
 row.names(a) <- unique(b)
 colnames(a) <- c("X", "Y")
-print(xtable::xtable(a, caption="Resumen de las variables X e Y", digits=4, label="tab:mytable"), type="latex")
+print(xtable::xtable(a, 
+                     caption="Resumen de las variables X e Y", 
+                     digits=4,
+                     label="tab:mytable"), 
+      type="latex")
 ```
 
-En la Tabla \ref{tabe:mytable} se observa que la mediana de las $x$ es `r round(median(datos$x_i), 4)`.
+En la Tabla \ref{tab:mytable} se observa que la mediana de las $x$ es `r  round(median(datos$x_i), 4)`.
 
+\newpage
 # Figura
 
-```{r, fig.cap="A figure"}
+```{r, fig.cap="A figure", fig.pos="h", out.width="70%", fig.align='center'}
 datos %>%
       ggplot() +
       geom_point(aes(x_i, y_i)) +
