@@ -90,6 +90,88 @@ mtcars %>%
 
 # Clase 4 (17/9/2018)
 
+## tidyverse
+
+```{r}
+mtcars = as_tibble(mtcars)
+# verbo filter: filtra seg{un condiciones de las filas}
+mtcars %>% filter(mpg > 22)
+filter(mtcars, mpg == 24.4 & gear == 4)
+filter(mtcars, mpg == 24.4 | mpg == 22.8)
+```
+
+```{r}
+# arrange: ordena las filas (menor a mayor)
+arrange(mtcars, mpg)
+# desc() ordena las filaes (mayor a menor)
+arrange(mtcars, desc(mpg))
+```
+
+```{r}
+# select: selecciona variable
+# puede utilizar funciones selectoras para matchear expresiones regulares
+# starts_with(), ends_with(), etc...
+dplyr::select(mtcars, ends_with("t"))
+dplyr::select(mtcars, wt:gear)
+dplyr::select(mtcars, -(wt:gear))
+```
+
+```{r}
+# mutate: crea nueva variable
+# transmute: me quedo solo con las variables nuevas
+```
+
+```{r}
+# group_by: agrupa segun variables
+#     una fila para cada grupo de la variable agrupadora
+# summarize: crea resumenes
+mtcars %>%
+      group_by(cyl) %>%
+      tally()
+```
+
+## Ejercicio de clase
+
+```{r}
+# 1
+mpg %>%
+      dplyr::select(manufacturer, model, year, cyl, cty) %>%
+      dplyr::filter(manufacturer == "toyota" & model == "camry")
+
+# 2
+mpg %>%
+      group_by(manufacturer) %>%
+      summarise(rend.prom = mean(cty)) %>%
+      filter(rend.prom == min(.$rend.prom) | rend.prom == max(.$rend.prom)) %>%
+      dplyr::select(manufacturer)
+
+# 3
+mpg %>%
+      group_by(manufacturer) %>%
+      summarise(cty.mean = mean(cty), 
+                sd.mean = sd(cty)/sqrt(n()), 
+                rend.rg = max(cty) - min(cty))
+
+# 4
+left_join(
+      mpg %>%
+      group_by(manufacturer) %>%
+      filter(year < 2004) %>%
+      summarise(cty.mean.antes = mean(cty)),
+      mpg %>%
+      group_by(manufacturer) %>%
+      filter(year > 2004) %>%
+      summarise(cty.mean.desp = mean(cty)),
+      by = "manufacturer"
+)
 
 
+# mpg %>%
+#       group_by(manufacturer, year) %>%
+#       summarise(cty.mean = mean(cty))
+# 
+# mpg %>%
+#       filter()
+
+```
 
