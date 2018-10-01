@@ -23,7 +23,7 @@ library(xtable)
 
 Simularemos los dato
 $$N\sim Po(9) \:\:\: text{cantidad d punto}$$
-$$x_i \sim Unif(0, \, ) \:\:\: N \text{ observaciones}$$
+$$x_i \sim Unif(0, \, 1) \:\:\: N \text{ observaciones}$$
 $$y_i \sim Unif(0, \, 1) \:\:\: N \text{ observaciones}$$
 
 Se puede acceder al repositorio donde se encuentra el código haciendo click [aqui](https://github.com/daczarne/rep_research/tree/master/Rmarkdown)
