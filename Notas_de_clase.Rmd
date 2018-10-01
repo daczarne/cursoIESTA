@@ -257,12 +257,75 @@ ggplot(propinas) +
 ```{r}
 ggplot(propinas) +
       geom_bar(aes(fct_infreq(dia), fill=sexo), position="fill") +
-      scale_x_discrete(labels=c("Vi"="Viernes", "Ju"="Jueves", "Sa"="Sábado", "Do"="Domingo" )) +
+      scale_x_discrete(labels=c("Vi"="Viernes", "Ju"="Jueves", 
+                                "Sa"="Sábado", "Do"="Domingo" )) +
       scale_fill_brewer(palette="Dark2") +
       coord_flip()
 ```
 
+# Clase 6 (10/1/2018)
 
+## Datos ordenados
+
+- una observación por fila  
+- una variable por columna  
+- un valor por celda  
+
+## Lectura de datos
+
+usar readr
+
+- delim: permite especificar el delimitador  
+- csv: comas  
+- csv2: punto y coma  
+- tsv: tabulador  
+- table: espacios  
+
+librería `haven`
+- sas sas  
+- sav: spss  
+- dta: stata  
+
+leer excel `readxl`  
+
+```{r}
+# mirar ejemplo en pdf de clase
+```
+
+## Exportar datos
+
+todo igual con `write_`  
+
+Usar `saveRDS` y `readRDS` y no `save` y `load` dado que las primeras no guardan el nombre del objeto, por lo tanto no se corre el riesgo de sobreescribir luego. Guarda de a un objeto. Si necesito guardar varios objetos, ponerlos en una lista.
+
+## Ordenar datos
+
+Parto de datos no ordenados y los necesito como tidy data. 
+
+key = categorias a colpasar
+value = valores de las observaciones (realizaciones de las variables)
+
+verbos: 
+- gather: mueve columnas a filas  
+- spread: mueve filas a columnas (gather a la menos uno)  
+- spearate: una columna a múltiples  
+- unite: une columnas  
+
+## Ejercicio de clase
+
+
+```{r}
+tmi = readRDS("tmi.rds")
+
+tmi_1 = tmi %>% 
+      gather(key="key", value="value", -Depto) %>%
+      separate(key, into=c("tipo", "year"))
+
+tmi_1 %>%
+      filter(Depto == "MONTEVIDEO" | Depto == "INTERIOR", tipo == "Tasa") %>%
+      spread(Depto, value) %>%
+      mutate(ratio = MONTEVIDEO / INTERIOR)
+```
 
 
 
