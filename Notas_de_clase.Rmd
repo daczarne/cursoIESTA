@@ -29,8 +29,6 @@ packrat y docker guardan todo el trabajo en un "pack" de R
 `cache = TRUE` guarda resultados del chunk en el cache y no vuelve a generarlo.  
 
 ```{r ejemplo_puntos, echo=TRUE, fig.width=3, fig.height=3, fig.align="right", fig.cap="Puntos aleatorios", fig.pos="h"}
-
-library(ggplot2)
 dat = data.frame(x=rnorm(100), y=rnorm(100))
 ggplot(dat, aes(x,y)) +
       geom_point()
@@ -47,7 +45,8 @@ ggplot(dat, aes(x,y)) +
 - El directorio de trabajo es el projecto mismo.  
 - Usar la librería "here".  
 
-```{r}
+```{r, eval=FALSE}
+# instalar librería here
 library(here)
 ```
 
@@ -175,5 +174,96 @@ left_join(
 
 ```
 
-
 # Clase 5 (24/9/2018)
+
+## Básicas de ggplot2
+
+. ggplot2  
+. basado en la grámatica gráfica de Wilkinson (2006)  
+. gráfico: mapeo dedatos a atributos estéticos de objetos geométricos
+
+```{r}
+propinas = read_csv("propina.csv")
+ggplot() + 
+      geom_point(data=propinas, aes(x=total, y=propina)) +
+      theme(aspect.ratio=1)
+
+ggplot() + 
+      geom_point(data=propinas, aes(x=total, y=propina, colour=sexo)) +
+      theme(aspect.ratio=1)
+
+ggplot() + 
+      geom_point(data=propinas, aes(x=total, y=propina, shape=sexo)) +
+      theme(aspect.ratio=1)
+
+ggplot() + 
+      geom_point(data=propinas, aes(x=total, y=propina, size=cantidad)) +
+      theme(aspect.ratio=1)
+
+ggplot(data=propinas, aes(x=total, y=propina) ) +
+      geom_point(colour="blue") + 
+      theme(aspect.ratio=1)
+
+ggplot(data=propinas, aes(x=total, y=propina, size=cantidad)) +
+      geom_point(alpha=1/3) + 
+      theme(aspect.ratio=1)
+```
+
+Las scales se modifican con una serie de funciones con el siguiente esquema de nombrado `scale_<aesthetic>_<type>`. Mirar `scale_<tab>` ver la lista de las funciones de scale.
+
+```{r}
+ggplot() + 
+      geom_point(data=propinas, aes(x=total, y=propina)) +
+      geom_point(data=data.frame(x=30, y=6), aes(x, y), color="red", size=10) +
+      theme(aspect.ratio=1)
+```
+
+## Facets
+
+```{r}
+ggplot(data=propinas, aes(x=total, y=propina, size=cantidad)) +
+      geom_point(alpha=1/3) + 
+      theme(aspect.ratio=1) +
+      facet_wrap(~sexo)
+
+ggplot(data=propinas, aes(x=total, y=propina)) +
+      geom_point() + 
+      theme(aspect.ratio=1) +
+      facet_grid(sexo~fuma)
+
+ggplot(data=propinas, aes(x=total, y=propina)) +
+      geom_point() + 
+      theme(aspect.ratio=1) +
+      facet_wrap(sexo~fuma)
+```
+
+## Ejercicios de clase
+
+```{r}
+ggplot(data=propinas, mapping=aes(total, propina)) +
+      geom_point(aes(color=fuma)) +
+      geom_smooth(color="black", method="lm") +
+      scale_color_brewer(palette="Dark2") +
+      labs(x="Total gastado en dólares", y="Propina en dólares", color="Fumador") +
+      theme(aspect.ratio=1, legend.position="bottom")
+```
+
+```{r}
+ggplot(propinas) +
+      geom_bar(aes(fct_infreq(dia), fill=dia)) +
+      coord_flip()
+```
+
+```{r}
+ggplot(propinas) +
+      geom_bar(aes(fct_infreq(dia), fill=sexo), position="fill") +
+      scale_x_discrete(labels=c("Vi"="Viernes", "Ju"="Jueves", "Sa"="Sábado", "Do"="Domingo" )) +
+      scale_fill_brewer(palette="Dark2") +
+      coord_flip()
+```
+
+
+
+
+
+
