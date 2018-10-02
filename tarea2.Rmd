@@ -1,0 +1,124 @@
+---
+title: "Tarea 2"
+author: " "
+date: "26/9/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, fig.pos='hbpt', out.extra='', message=FALSE, warning=FALSE)
+library(tidyverse)
+library(stringr)
+library(magrittr)
+```
+
+## Explicativo
+Esta tarea debe ser entregada el miércoles 3 de Octubre. Debe ser realizada en Rmarkdown y debe incluir en el documento el link a tu repositorio personal en GitHub con los archivos fuente para reproducir los resultados. A su vez debe compartir el pdf en EVA. 
+
+Los datos que vamos a utilizar en este ejercicio están disponibles en el catálogo de datos abiertos Uruguay https://catalogodatos.gub.uy.
+
+Los datos corresponden a los gastos realizados por actos médicos, **cada fila representa un acto médico**. Los datos y los metadatos se encuentran disponibles:
+
+https://catalogodatos.gub.uy/dataset/gasto_am_2016_fondo-nacional-de-recursos/resource/936ac9e6-b0f6-424a-9b53-ee408a91fd6f
+
+Los pueden leer en R de la siguiente forma:
+
+```{r, echo=TRUE}
+gastolink <- 'https://catalogodatos.gub.uy/dataset/96e636e5-4f78-49a7-8e14-60e90173a0c0/resource/936ac9e6-b0f6-424a-9b53-ee408a91fd6f/download/datos_gastos-por-actos-mdicos-2016.csv'
+gastos <- read.csv(gastolink, header=TRUE, dec=",", encoding="latin1") %>% as_tibble()
+```
+
+## Ejercicio 1
+
+Usando las funciones de la librería `dplyr` respondé:  
+
+a. ¿Cuál es la prestación con mayor cantidad de actos médicos en Montevideo?      
+
+```{r, comment=""}
+gastos %>%
+      filter(Departamento_residencia == "MONTEVIDEO") %>%
+      group_by(Prestacion) %>%
+      tally() %>%
+      arrange(desc(n)) %$%
+      cat(paste("La prestación con mayor cantidad de actos médicos en Montevideo es", 
+                as.character(unclass(.[1,1])[[1]])))
+```
+
+b. Creá una variable con los totales de actos médicos por Departamento de residencia (`Departamento_residencia`). ¿Cuál es el departamento de residencia con menor cantidad de actos médicos?      
+
+```{r, comment=""}
+gastos %>%
+      group_by(Departamento_residencia) %>%
+      tally() %>%
+      arrange(n) %$%
+      cat(paste("El departamento con menor cantidad de actos médicos es", 
+                str_to_title(as.character(unclass(.[1,1])[[1]]))))
+```
+
+\newpage
+
+c. ¿Qué cantidad de actos médicos son prestados por ASSE o IAMC?       
+
+```{r, comment=""}
+gastos %>%
+      filter(Prestador_tipo %in% c("ASSE", "IAMC")) %>%
+      tally() %$%
+      cat(paste("La cantidad de actos médicos prestados por ASSE o IAMC es de", 
+                as.numeric(.)))
+```
+
+e.  Cada fila representa un acto médico, por lo que puede haber filas que se correspondan con la misma persona. ¿Cómo se puede verificar si esto es así? ¿Cuantos pacientes distintos hay en los datos?
+
+```{r}
+gastos %>%
+      group_by(Paciente) %>%
+      tally() %$%
+      dim(.)[1] %$%
+      paste("La base contiene", dim(gastos)[1])
+class(.Last.value)
+
+# , "sobre", as.numeric(.), "pacientes")
+```
+
+d. Crear un **nuevo** conjunto de datos en que cada fila sea un paciente. Agregar dos variables:  el gasto total de la persona en actos médicos y la cantidad de visitas. Conservá el resto de las variables originales menos `Prestacion` e `Importe`(Sugerencia usar `summarise_all` ).
+
+
+\newpage
+
+## Ejercicio 2
+a. Replique el siguiente gráfico (Figura 1) usando `ggplot2` y `forcats` para ordenar el gráfico.
+
+
+b. Replique el siguiente gráfico (Figura 2) usando `ggplot2` y `forcats` para ordenar.
+
+\newpage
+
+c. Replique el siguiente gráfico (Figura 3) usando `ggplot2` y `forcats` para ordenar.
+
+**Notar** que el orden de los niveles de `Prestacion` fueron ordenados haciendo:
+
+* una variable auxiliar que vale 1 si `Prestador_tipo` es ASSE y 0 en otro caso    
+* ordenamos los niveles de prestación según la media de la variable auxiliar
+* usamos la función `fct_reorder` 
+
+Comente algo interesante que surge de este gráfico.
+
+\newpage
+## Ejercicio 3
+a. Usando `ggplot2` elabore una visualización que permita responder la pregunta de ¿Cuáles son las 10 instituciones prestadoras (`Prestador`) que brindaron mayor proporción de actos médicos en Montevideo (`Prestador_deparamento`)?
+
+Las etiquetas de los ejes deben ser claras y describir las variables involucradas. Incluir un `caption` (Título) en la figura y algún comentario de interés que describa el gráfico. Puede utilizar `fig.cap` en el chunck de código. 
+
+b. Usando `ggplot2` elabore un gráfico de cajas con el importe del acto médico (en logaritmos) según tipo de prestador y sexo. 
+
+Las etiquetas de los ejes deben ser claras y describir las variables involucradas. Incluir un `caption` (Título) en la figura y algún comentario de interés que describa el gráfico. Puede utilizar `fig.cap` en el chunck de código. 
+
+
+c. Se desea explorar la asociación entre la edad del paciente y el importe de los actos médicos (en logaritmos). Realiza alguna visualización para estudiar dicha asociación, y ver como esta varía según el sexo del paciente y el tipo de prestador. 
+
+
+d. Realiza alguna visualización para estudiar el gasto promedio por persona en cada departamento, tipo de prestador y sexo. 
+
+e. Realiza alguna visualización para estudiar el peso de las prestaciones en cantidad de actos y en monto relativo. ¿Son las prestaciones más comunes las más caras?
+
+
