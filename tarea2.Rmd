@@ -1,27 +1,29 @@
 ---
 title: "Tarea 2"
-author: " "
-date: "26/9/2018"
+author: "Daniel Czarnievicz"
+date: "Octubre 2018"
 output: pdf_document
+header-includes:
+   - \usepackage{mathrsfs}
+   - \everymath{\displaystyle}
+   - \setlength{\parindent}{4em}
+   - \setlength{\parskip}{1em}
+   - \usepackage{fancyhdr}
+   - \pagestyle{fancy}
+   - \lhead{Tarea 2}
+   - \rhead{Daniel Czarnievicz}
+   - \usepackage{multirow}
+   - \usepackage{cancel}
+   - \usepackage{float}
+   - \usepackage{mathrsfs}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=TRUE, fig.pos='hbpt', out.extra='', message=FALSE, warning=FALSE)
+knitr::opts_chunk$set(echo=TRUE) #, fig.pos='hbpt', out.extra='', message=FALSE, warning=FALSE)
 library(tidyverse)
 library(stringr)
 library(magrittr)
 ```
-
-## Explicativo
-Esta tarea debe ser entregada el miércoles 3 de Octubre. Debe ser realizada en Rmarkdown y debe incluir en el documento el link a tu repositorio personal en GitHub con los archivos fuente para reproducir los resultados. A su vez debe compartir el pdf en EVA. 
-
-Los datos que vamos a utilizar en este ejercicio están disponibles en el catálogo de datos abiertos Uruguay https://catalogodatos.gub.uy.
-
-Los datos corresponden a los gastos realizados por actos médicos, **cada fila representa un acto médico**. Los datos y los metadatos se encuentran disponibles:
-
-https://catalogodatos.gub.uy/dataset/gasto_am_2016_fondo-nacional-de-recursos/resource/936ac9e6-b0f6-424a-9b53-ee408a91fd6f
-
-Los pueden leer en R de la siguiente forma:
 
 ```{r, echo=TRUE}
 gastolink <- 'https://catalogodatos.gub.uy/dataset/96e636e5-4f78-49a7-8e14-60e90173a0c0/resource/936ac9e6-b0f6-424a-9b53-ee408a91fd6f/download/datos_gastos-por-actos-mdicos-2016.csv'
@@ -55,8 +57,6 @@ gastos %>%
                 str_to_title(as.character(unclass(.[1,1])[[1]]))))
 ```
 
-\newpage
-
 c. ¿Qué cantidad de actos médicos son prestados por ASSE o IAMC?       
 
 ```{r, comment=""}
@@ -67,43 +67,106 @@ gastos %>%
                 as.numeric(.)))
 ```
 
-e.  Cada fila representa un acto médico, por lo que puede haber filas que se correspondan con la misma persona. ¿Cómo se puede verificar si esto es así? ¿Cuantos pacientes distintos hay en los datos?
+\newpage
+d. Cada fila representa un acto médico, por lo que puede haber filas que se correspondan con la misma persona. ¿Cómo se puede verificar si esto es así? ¿Cuantos pacientes distintos hay en los datos?
 
-```{r}
+```{r, comment=NA}
 gastos %>%
       group_by(Paciente) %>%
       tally() %$%
-      dim(.)[1] %$%
-      paste("La base contiene", dim(gastos)[1])
-class(.Last.value)
-
-# , "sobre", as.numeric(.), "pacientes")
+      cat(paste("La base contiene", dim(gastos)[1], "observaciones correspondientes a",
+            dim(.)[1], "pacientes"))
 ```
 
-d. Crear un **nuevo** conjunto de datos en que cada fila sea un paciente. Agregar dos variables:  el gasto total de la persona en actos médicos y la cantidad de visitas. Conservá el resto de las variables originales menos `Prestacion` e `Importe`(Sugerencia usar `summarise_all` ).
+e. Crear un **nuevo** conjunto de datos en que cada fila sea un paciente. Agregar dos variables:  el gasto total de la persona en actos médicos y la cantidad de visitas. Conservá el resto de las variables originales menos `Prestacion` e `Importe`(Sugerencia usar `summarise_all` ).
 
+```{r, comment=""}
+gastos %>%
+      group_by(Paciente) %>%
+      summarise(Gasto = sum(Importe), Visitas = n()) %>%
+      right_join(gastos, by="Paciente") %>%
+      dplyr::select(-Prestacion, -Importe)
+```
 
 \newpage
 
 ## Ejercicio 2
+
 a. Replique el siguiente gráfico (Figura 1) usando `ggplot2` y `forcats` para ordenar el gráfico.
 
+```{r, fig.cap="Proporción de actos médicos según departamento de residecia", fig.align="center", fig.pos="h"}
+gastos %>%
+      group_by(Departamento_residencia) %>%
+      tally() %>%
+      mutate(Prop = n/sum(n)) %>%
+      ggplot() +
+      geom_point(aes(fct_reorder(Departamento_residencia, Prop), Prop)) +
+      coord_flip() +
+      labs(x="Departamento de residencia", y="Proporción de actos médicos") +
+      theme(aspect.ratio=1)
+```
+
+\newpage
 
 b. Replique el siguiente gráfico (Figura 2) usando `ggplot2` y `forcats` para ordenar.
+
+```{r, fig.cap="Gráfico de barras de la cantidad de actos médicos en Montevideo por tipo de Prestación", fig.align="center", fig.pos="h"}
+gastos %>%
+      filter(Departamento_residencia == "MONTEVIDEO") %>%
+      group_by(Prestacion) %>%
+      tally() %>%
+      ggplot() +
+      geom_bar(aes(x=fct_reorder(Prestacion, n, .desc=TRUE), y=n), stat="identity") +
+      labs(y="Total de actos médicos", x=NULL) +
+      theme(axis.text.x=element_text(angle=90, size=5))
+```
 
 \newpage
 
 c. Replique el siguiente gráfico (Figura 3) usando `ggplot2` y `forcats` para ordenar.
 
-**Notar** que el orden de los niveles de `Prestacion` fueron ordenados haciendo:
+```{r, echo=FALSE, eval=FALSE, fig.cap="Gráfico de barras apiladas al 100 de la cantidad de actos médicos en Montevideo por tipo de Prestacion", fig.align="center", fig.pos="h"}
+# con filtro para Mvdeo
+gastos %>%
+      filter(Departamento_residencia == "MONTEVIDEO") %>%
+      mutate(esASSE = if_else(Prestador_tipo == "ASSE", 1, 0)) %>%
+      group_by(Prestacion) %>%
+      summarise(cantASSE = sum(esASSE), cant=n()) %>%
+      mutate(propASSE = cantASSE / cant) %>%
+      dplyr::select(Prestacion, propASSE) %>%
+      right_join(gastos, by="Prestacion") %>%
+      filter(Departamento_residencia == "MONTEVIDEO") %>%
+      ggplot() +
+      geom_bar(aes(fct_reorder(Prestacion, propASSE), fill=Prestador_tipo), position="fill") +
+      coord_flip() +
+      labs(x="Tipo de presaticón", y="Proporción") +
+      theme(axis.text.y=element_text(size=4),
+            legend.position="bottom")
+```
 
-* una variable auxiliar que vale 1 si `Prestador_tipo` es ASSE y 0 en otro caso    
-* ordenamos los niveles de prestación según la media de la variable auxiliar
-* usamos la función `fct_reorder` 
+```{r, fig.cap="Gráfico de barras apiladas al 100 de la cantidad de actos médicos en Montevideo por tipo de Prestacion", fig.align="center", fig.pos="h"}            
+# sin filtro para mvdeo
+gastos %>%
+      mutate(esASSE = if_else(Prestador_tipo == "ASSE", 1, 0)) %>%
+      group_by(Prestacion) %>%
+      summarise(cantASSE = sum(esASSE), cant=n()) %>%
+      mutate(propASSE = cantASSE / cant) %>%
+      dplyr::select(Prestacion, propASSE) %>%
+      right_join(gastos, by="Prestacion") %>%
+      ggplot() +
+      geom_bar(aes(fct_reorder(Prestacion, propASSE), fill=Prestador_tipo), position="fill") +
+      coord_flip() +
+      labs(x="Tipo de presaticón", y="Proporción") +
+      theme(axis.text.y=element_text(size=4),
+            legend.position="bottom")
+```
 
 Comente algo interesante que surge de este gráfico.
 
+Que el caption habla de Mvdeo pero no tiene el filtro.
+
 \newpage
+
 ## Ejercicio 3
 a. Usando `ggplot2` elabore una visualización que permita responder la pregunta de ¿Cuáles son las 10 instituciones prestadoras (`Prestador`) que brindaron mayor proporción de actos médicos en Montevideo (`Prestador_deparamento`)?
 
