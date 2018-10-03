@@ -24,6 +24,8 @@ library(stringr)
 library(magrittr)
 ```
 
+Se puede acceder al repositorio donde se encuentra el código haciendo click [aqui](https://github.com/daczarne/rep_research/blob/master/tarea2.Rmd)
+
 ```{r, echo=TRUE}
 gastolink <- 'https://catalogodatos.gub.uy/dataset/96e636e5-4f78-49a7-8e14-60e90173a0c0/resource/936ac9e6-b0f6-424a-9b53-ee408a91fd6f/download/datos_gastos-por-actos-mdicos-2016.csv'
 gastos <- read.csv(gastolink, header=TRUE, dec=",", encoding="latin1") %>% as_tibble()
@@ -131,7 +133,7 @@ gastos %>%
       filter(Departamento_residencia == "MONTEVIDEO") %>%
       mutate(esASSE = if_else(Prestador_tipo == "ASSE", 1, 0)) %>%
       group_by(Prestacion) %>%
-      summarise(cantASSE = sum(esASSE), cant=n()) %>%
+      summarise(cantASSE = sum(esASSE), cant = n()) %>%
       mutate(propASSE = cantASSE / cant) %>%
       dplyr::select(Prestacion, propASSE) %>%
       right_join(gastos, by="Prestacion") %>%
@@ -140,7 +142,7 @@ gastos %>%
       geom_bar(aes(fct_reorder(Prestacion, propASSE), fill=Prestador_tipo), position="fill") +
       coord_flip() +
       labs(x="Tipo de presaticón", y="Proporción") +
-      theme(axis.text.y=element_text(size=4),
+      theme(axis.text.y=element_text(size=5, face="bold"),
             legend.position="bottom")
 ```
 
@@ -157,13 +159,9 @@ gastos %>%
       geom_bar(aes(fct_reorder(Prestacion, propASSE), fill=Prestador_tipo), position="fill") +
       coord_flip() +
       labs(x="Tipo de presaticón", y="Proporción") +
-      theme(axis.text.y=element_text(size=4),
+      theme(axis.text.y=element_text(size=5, face="bold"),
             legend.position="bottom")
 ```
-
-Comente algo interesante que surge de este gráfico.
-
-Nada.
 
 \newpage
 
@@ -171,7 +169,7 @@ Nada.
 
 a. Usando `ggplot2` elabore una visualización que permita responder la pregunta de ¿Cuáles son las 10 instituciones prestadoras (`Prestador`) que brindaron mayor proporción de actos médicos en Montevideo (`Prestador_deparamento`)?
 
-```{r, fig.cap="Gráfico de barras de la proporción de actos médicos en Montevideo por Prestador", fig.align="center", fig.pos="h"}
+```{r, fig.cap="Gráfico de barras de la proporción de actos médicos en Montevideo por prestador (principales 30)", fig.align="center", fig.pos="h"}
 gastos %>%
       dplyr::filter(Departamento_residencia == "MONTEVIDEO") %>%
       group_by(Prestador) %>%
@@ -211,11 +209,72 @@ gastos %>%
 
 \newpage
 
-c. Se desea explorar la asociación entre la edad del paciente y el importe de los actos médicos (en logaritmos). Realiza alguna visualización para estudiar dicha asociación, y ver como esta varía según el sexo del paciente y el tipo de prestador. 
+c. Se desea explorar la asociación entre la edad del paciente y el importe de los actos médicos (en logaritmos). Realiza alguna visualización para estudiar dicha asociación, y ver como esta varía según el sexo del paciente y el tipo de prestador.
 
+
+```{r, fig.cap="Scatter plot de la edad del paciente (en años) y el importe (en logaritmos) por tipo de prestador según sexo", fig.align="center", fig.pos="h"}
+gastos %>%
+      ggplot() +
+      geom_point(aes(x=Edad_años, y=log(Importe)), alpha=0.2) +
+      facet_grid(Sexo ~ Prestador_tipo) +
+      labs(x="Edad del paciente (en años)", y="Importe (en logaritmos)") +
+      ggthemes::theme_economist() +
+      theme(axis.title=element_text(face="bold"),
+            strip.text=element_text(size=8),
+            strip.text.y=element_text(angle=0),
+            aspect.ratio=1)
+```
+
+\newpage
 
 d. Realiza alguna visualización para estudiar el gasto promedio por persona en cada departamento, tipo de prestador y sexo. 
 
+```{r, fig.cap="Gasto promedio por persona (en miles) en cada departamento, por tipo de prestador según sexo", fig.align="center", fig.pos="h"}
+gastos %>%
+      group_by(Paciente, Departamento_residencia, Prestador_tipo, Sexo) %>%
+      summarize(gto_total = sum(Importe)) %>%
+      group_by(Departamento_residencia, Prestador_tipo, Sexo) %>%
+      summarise(gto_prom = mean(gto_total)) %>%
+      ggplot() +
+      geom_bar(aes(Departamento_residencia, gto_prom/1000), stat="identity") +
+      facet_grid(Sexo ~ Prestador_tipo) +
+      labs(x="Departamento de residencia", y="Gasto promedio (en miles)") +
+      ggthemes::theme_economist() +
+      theme(axis.text.x=element_text(angle=90, size=4, hjust=1),
+            axis.title=element_text(face="bold"),
+            strip.text=element_text(size=8),
+            strip.text.y=element_text(angle=0))
+```
+
+\newpage
+
 e. Realiza alguna visualización para estudiar el peso de las prestaciones en cantidad de actos y en monto relativo. ¿Son las prestaciones más comunes las más caras?
+
+```{r, fig.cap="Scatter plot de la proporción de la prestación en total de las prestaciones realizadas y la proporción del gasto en el total del gasto realizado para cada prestación ", fig.align="center", fig.pos="h"}
+gastos %>%
+      group_by(Prestacion) %>%
+      summarise(total.presta = n(), total.gto = sum(Importe)) %>%
+      mutate(prop.presta = total.presta / sum(total.presta), 
+             prop.gto = total.gto / sum(total.gto)) %>%
+      dplyr::select(-total.presta, -total.gto) %>%
+      ggplot() +
+      geom_point(aes(x=prop.presta, y=prop.gto), alpha=0.5) +
+      labs(x="Proporción de la prestación", y="Proporción del gasto") +
+      ggthemes::theme_economist() +
+      theme(axis.title=element_text(face="bold"),
+            aspect.ratio=1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
