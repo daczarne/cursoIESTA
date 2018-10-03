@@ -19,14 +19,14 @@ library(tidyverse)
 library(xtable)
 ```
 
+Se puede acceder al repositorio donde se encuentra el código haciendo click [aqui](https://github.com/daczarne/rep_research/tree/master/Rmarkdown)
+
 # Introducción
 
-Simularemos los dato
-$$N\sim Po(9) \:\:\: text{cantidad d punto}$$
+Simularemos los datos
+$$N\sim Po(9) \:\:\: \text{cantidad de observaciones}$$
 $$x_i \sim Unif(0, \, 1) \:\:\: N \text{ observaciones}$$
 $$y_i \sim Unif(0, \, 1) \:\:\: N \text{ observaciones}$$
-
-Se puede acceder al repositorio donde se encuentra el código haciendo click [aqui](https://github.com/daczarne/rep_research/tree/master/Rmarkdown)
 
 # Simulaciones y tabla
 
@@ -37,7 +37,7 @@ y_i <- runif(N, min=0, max=1)
 datos <- as_tibble(cbind(x_i, y_i))
 ```
 
-```{r mytable, results='asis', message=FALSE, echo=FALSE, comment=""}
+```{r mytable, results='asis', message=FALSE, echo=TRUE, comment=""}
 a <- unclass(summary(datos))
 dim(a) <- NULL
 b <- sub(":.*", "", a)
@@ -55,9 +55,10 @@ print(xtable::xtable(a,
 En la Tabla \ref{tab:mytable} se observa que la mediana de las $x$ es `r  round(median(datos$x_i), 4)`.
 
 \newpage
+
 # Figura
 
-```{r, fig.cap="A figure", fig.pos="h", out.width="70%", fig.align='center'}
+```{r, fig.cap="Scatter plot de X y Y", fig.pos="h", out.width="70%", fig.align='center'}
 datos %>%
       ggplot() +
       geom_point(aes(x_i, y_i)) +
