@@ -15,7 +15,6 @@ header-includes:
    - \usepackage{multirow}
    - \usepackage{cancel}
    - \usepackage{float}
-   - \usepackage{mathrsfs}
 ---
 
 ```{r setup, include=FALSE}
@@ -68,6 +67,7 @@ gastos %>%
 ```
 
 \newpage
+
 d. Cada fila representa un acto médico, por lo que puede haber filas que se correspondan con la misma persona. ¿Cómo se puede verificar si esto es así? ¿Cuantos pacientes distintos hay en los datos?
 
 ```{r, comment=NA}
@@ -144,7 +144,7 @@ gastos %>%
             legend.position="bottom")
 ```
 
-```{r, fig.cap="Gráfico de barras apiladas al 100 de la cantidad de actos médicos en Montevideo por tipo de Prestacion", fig.align="center", fig.pos="h"}            
+```{r, fig.cap="Gráfico de barras apiladas al 100 de la cantidad de actos médicos en Montevideo por tipo de Prestacion", fig.align="center", fig.pos="h"}
 # sin filtro para mvdeo
 gastos %>%
       mutate(esASSE = if_else(Prestador_tipo == "ASSE", 1, 0)) %>%
@@ -163,19 +163,53 @@ gastos %>%
 
 Comente algo interesante que surge de este gráfico.
 
-Que el caption habla de Mvdeo pero no tiene el filtro.
+Nada.
 
 \newpage
 
 ## Ejercicio 3
+
 a. Usando `ggplot2` elabore una visualización que permita responder la pregunta de ¿Cuáles son las 10 instituciones prestadoras (`Prestador`) que brindaron mayor proporción de actos médicos en Montevideo (`Prestador_deparamento`)?
+
+```{r, fig.cap="Gráfico de barras de la proporción de actos médicos en Montevideo por Prestador", fig.align="center", fig.pos="h"}
+gastos %>%
+      dplyr::filter(Departamento_residencia == "MONTEVIDEO") %>%
+      group_by(Prestador) %>%
+      tally() %>%
+      mutate(prop_presta = n/sum(n)) %>%
+      mutate(ranking = rank(prop_presta, ties.method="max")) %>%
+      dplyr::arrange(desc(ranking)) %>%
+      head(n=30L) %>%
+      droplevels() %>%
+      ggplot() +
+      geom_bar(aes(fct_reorder(Prestador, prop_presta, .desc=FALSE), prop_presta),
+               stat="identity") +
+      coord_flip() +
+      labs(x="Prestador", y="Proporción de prestaciones") +
+      ggthemes::theme_economist(horizontal=FALSE) +
+      theme(axis.text.y=element_text(hjust=1, size=6),
+            axis.title=element_text(face="bold"))
+```
 
 Las etiquetas de los ejes deben ser claras y describir las variables involucradas. Incluir un `caption` (Título) en la figura y algún comentario de interés que describa el gráfico. Puede utilizar `fig.cap` en el chunck de código. 
 
 b. Usando `ggplot2` elabore un gráfico de cajas con el importe del acto médico (en logaritmos) según tipo de prestador y sexo. 
 
-Las etiquetas de los ejes deben ser claras y describir las variables involucradas. Incluir un `caption` (Título) en la figura y algún comentario de interés que describa el gráfico. Puede utilizar `fig.cap` en el chunck de código. 
+```{r, fig.cap="Boxplot del logaritmo del importe por prestador según sexo", fig.align="center", fig.pos="h"}
+gastos %>%
+      ggplot() +
+      geom_boxplot(aes(Prestador_tipo, log(Importe), fill=Prestador_tipo),
+                   show.legend=FALSE, outlier.alpha=.1) +
+      facet_wrap(~Sexo) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width=10)) +
+      labs(x="Tipo de prestador", y="Importe (en logaritmos)") +
+      ggthemes::theme_economist() +
+      theme(axis.title=element_text(face="bold"),
+            axis.text.x=element_text(vjust=0.5))
+```
 
+
+\newpage
 
 c. Se desea explorar la asociación entre la edad del paciente y el importe de los actos médicos (en logaritmos). Realiza alguna visualización para estudiar dicha asociación, y ver como esta varía según el sexo del paciente y el tipo de prestador. 
 
