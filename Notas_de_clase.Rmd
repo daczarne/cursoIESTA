@@ -327,6 +327,22 @@ tmi_1 %>%
       mutate(ratio = MONTEVIDEO / INTERIOR)
 ```
 
+# Clase 7 (8/10/2018)
+
+## Benchmarking and profiling
+
+. Usar microbenchmark para testear tiempo de la libraria microbenchmark  
+. usar profvis  
+
+## Rcpp
+
+. Conecta R con C++  
+
+```{r, eval=FALSE}
+# funcionará esto??
+Rcpp::sourceCpp("primer_funcion.cpp")
+```
+
 
 
 
