@@ -7,7 +7,11 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(here)
 library(tidyverse)
+library(microbenchmark)
+library(Rcpp)
+library(RcppArmadillo)
 ```
 
 # Clase 1 (20/8/2018)
@@ -343,6 +347,30 @@ tmi_1 %>%
 Rcpp::sourceCpp("primer_funcion.cpp")
 ```
 
+# Clase 8 (22/10/2018)
 
+```{r}
+f <- function(n){
+      if(n < 2){
+            return(n)            
+      } else {
+            return(f(n-1) + f(n-2))
+      }
+      }
 
+f(5)
+f(10)
+f(30)
+```
+
+```{r, eval=FALSE}
+# funcionará esto??
+Rcpp::sourceCpp("fibonacci.cpp")
+g(30)
+```
+
+```{r, echo=FALSE}
+Rcpp::sourceCpp('fibonacci.cpp')
+microbenchmark(f(20), g(20), unit = 'relative', times = 100)
+```
 
