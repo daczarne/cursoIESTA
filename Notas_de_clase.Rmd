@@ -373,5 +373,3 @@ g(30)
 Rcpp::sourceCpp('fibonacci.cpp')
 microbenchmark(f(20), g(20), unit = 'relative', times = 100)
 ```
-
-bla
