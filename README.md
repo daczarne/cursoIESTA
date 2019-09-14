@@ -1,1 +1,1 @@
-# Reproducible Research ![dormant](https://img.shields.io/badge/lifecycle-dormant-blue.svg)
+# Reproducible Research ![retired](https://img.shields.io/badge/lifecycle-retired-orange.svg)
