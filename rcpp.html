@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rcpp</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Natalia da Silva, Ignacio Alvarez-Castro       Instituto de Estadística-UDELAR" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Rcpp
+### Natalia da Silva, Ignacio Alvarez-Castro <br /> <br /> <br /> Instituto de Estadística-UDELAR
+
+---
+
+
+
+
+
+
+## &lt;span style = "color:#88398A"&gt; Plan de clase &lt;/span&gt;    
+
+- Rcpp repaso (crear funciones, ver su velocidad)
+
+- Sugar, STL
+
+- RcppArmadillo
+
+---
+
+
+## &lt;span style = "color:#88398A"&gt; Diferencias R vs C++ &lt;/span&gt; 
+- En C++ no usamos asignaciones para crear una función
+
+- Cada variable debe ser declarada antes de ser usada
+
+- Hay que declarar el tipo de output que queremos que nos devuelva una función ej: NumericVector
+
+- Cada declaración debe ser terminada con ;
+
+- Hay que explicitar lo que debe retornar una función
+---
+
+## &lt;span style = "color:#88398A"&gt; Una función en 4 pasos &lt;/span&gt;    
+
+  1) Abrir un archivo cpp (File -&gt; New File -&gt; C++ File)
+
+  2) Borrar todo menos: 
+
+```rcpp
+#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+NumericVector timesTwo(NumericVector x) {
+  return x * 2;
+}
+```
+  3) Guardar el archivo como `primer_funcion.cpp`
+
+  4) Hacer en `R`:
+
+```r
+library(Rcpp)
+sourceCpp('primer_funcion.cpp')
+```
+
+---
+
+
+## &lt;span style = "color:#88398A"&gt; Qué hicimos? &lt;/span&gt;    
+
+- Definimos una función en C++ `timesTwo`
+
+- Opera con un vector numérico como argumento
+
+- Usamos Rcpp y hacemos `sourceCpp`
+
+- Rcpp creates un wrapper
+
+- Rcpp compila, relaciona, y carga el wrapper
+
+- La función queda disponible en R bajo su nombre en C++
+
+
+`using namespace Rcpp` implica que podemos usar funciones de Rcpp por su nombre sin el prefijo  Rcpp::
+
+`//[[Rcpp::export]]` usamos esta declaración por cada función que queremos hacer disponible en R
+
+
+---
+
+## &lt;span style = "color:#88398A"&gt; Enfocado en velocidad &lt;/span&gt;
+
+- Tipicamente usamos C++ para mejorar la performance en:
+
+- Loops que no pueden ser vectorizados simplemente
+
+- Funciones recursivas, o problemas que llamen funciones muchas veces
+
+- Problemas con estructuras de datos avanzadas y algoritmos que R no tiene. Con la librería STL, C++ tiene implementaciones eficientes de muchas estructuras de datos  
+
+---
+
+
+## &lt;span style = "color:#88398A"&gt; Sucesión de Fibonacci &lt;/span&gt;
+Suma recursiva de los dos términos anteriores
+`\(f_n = f_{n-1}+f_{n-2}\)` siendo los valores iniciales `\(f_0 = 0\)` y `\(f_1 = 1\)`.
+
+```r
+ f &lt;- function(n){
+if(n &lt; 2) return(n) 
+   return(f(n-1) + f(n-2))
+ }
+
+
+f(5)
+```
+
+```
+## [1] 5
+```
+
+```r
+f(10)
+```
+
+```
+## [1] 55
+```
+---
+
+## &lt;span style = "color:#88398A"&gt; Sucesión de Fibonacci &lt;/span&gt;
+
+- Muy ineficiente, ej para `\(f_5\)` necesitamos `\(f_3\)` y `\(f_4\)` y con `\(f_4\)` calculamos .... 
+
+- El tiempo de cálculo aumenta exponencialmente con n
+
+- Este tipo de cálculos son de los peores en términos de performance
+
+- En R llamar funciones no es de lo más liviano por lo que las funciones recursivas son intratables
+
+---
+
+## &lt;span style = "color:#88398A"&gt; Sucesión de Fibonacci &lt;/span&gt; 
+![](rcpp_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+---
+
+## &lt;span style = "color:#88398A"&gt; Enfocado en velocidad &lt;/span&gt;
+
+
+```c
+#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+int g(int n) {
+  if (n &lt; 2) return(n); 
+  return(g(n-1) + g(n-2));
+}
+
+```
+- Compilar fibonacci.cpp
+---
+
+
+## &lt;span style = "color:#88398A"&gt; Enfocado en velocidad &lt;/span&gt;
+
+
+```r
+sourceCpp('fibonacci.cpp')
+microbenchmark(f(20), g(20), unit = 'relative', times = 100)
+```
+
+```
+## Unit: relative
+##   expr      min      lq     mean   median       uq      max neval
+##  f(20) 171.5173 172.651 130.3479 156.5466 152.5305 11.41693   100
+##  g(20)   1.0000   1.000   1.0000   1.0000   1.0000  1.00000   100
+```
+---
+
+
+## &lt;span style = "color:#88398A"&gt; STL &lt;/span&gt;
+
+- La mayor fortaleza de C++ se ve cuando queremos implementar algoritmos complejos
+
+- STL (Standard template library) tiene estructura de datos y algoritmos útiles.
+
+---
+
+
+## &lt;span style = "color:#88398A"&gt; STL &lt;/span&gt;
+Estructuras de datos:
+
+- `array`, `bitset`, `list`, `forward_list`, `map`, `multimap`, `multiset`, `priority_queue`, `queue`, `dequeue`, `set`, `stack`, `unordered_map`, `unordered_set`, `unordered_multimap`, `unordered_multiset` y `vector`. 
+
+- Referencia pra  estructura de datos en STL  http://www.cplusplus.com/reference/stl/ 
+
+- Con `Rcpp` se pueden convertir estructuras de datos de muchos tipos en STL a los equivalentes en R
+
+---
+
+
+## &lt;span style = "color:#88398A"&gt; STL &lt;/span&gt;
+
+Vectores:
+
+- Similar a R pero más eficientes.
+
+- Necesitamos definirle el tipo de objetos en el vector cuando son creados. Ej: `std::vector&lt;int&gt;`,  `std::vector&lt;double&gt;`
+
+- Acceder a elementos individuales de un vector `[]` 
+
+---
+
+
+## &lt;span style = "color:#88398A"&gt; Ejemplo STL transform&lt;/span&gt;
+- STL `transform` puede ser usada para evaluar una función a un vector
+
+
+```c
+#include &lt;Rcpp.h&gt;
+using namespace Rcpp;
+
+inline double square(double x) { return x*x ; }
+
+// [[Rcpp::export]]
+std::vector&lt;double&gt; transformEx(const std::vector&lt;double&gt;&amp; x) {
+  std::vector&lt;double&gt; y(x.size());
+  std::transform(x.begin(), x.end(), y.begin(), square);
+  return y;
+}
+
+```
+- compilar cuadrado.cpp 
+---
+
+
+## &lt;span style = "color:#88398A"&gt; C++&lt;/span&gt;
+Aprender lo básico de C++
+
+- https://www.learncpp.com
+
+- http://www.cplusplus.com
+---
+
+## &lt;span style = "color:#88398A"&gt; STL transform&lt;/span&gt;
+
+http://www.cplusplus.com/reference/algorithm/transform/
+
+---
+
+
+
+## &lt;span style = "color:#88398A"&gt;sugar &lt;/span&gt;
+
+`Rcpp` "sugar" : Funciones genéricas que se comportan de forma similar a sus equivalente en `R`.
+
+- facilitan la escritura de código eficiente en `C++`
+
+- son funciones ya "testeadas"
+
+grupos de funciones: 
+- operadores lógicos y aritméticos 
+- funciones de resumen lógico 
+- otras (matemáticas, ver vectores, etc ) 
+
+---
+## &lt;span style = "color:#88398A"&gt; Ejemplo sugar &lt;/span&gt;
+
+Una funcion en `R`: 
+
+```r
+compara &lt;- function(x, y) {
+ ifelse( x &lt; y, x*x, -(y*y) )
+}
+```
+
+su traducción a `Rcpp` 
+
+
+```rcpp
+NumericVector compara1( NumericVector xs, NumericVector ys ) {
+  int n = xs.size();
+  NumericVector res( n );
+    for(int i=0; i&lt;n; i++) {
+        double x = xs[i];
+        double y = ys[i];
+        if( x &lt; y ) {
+            res[i] = x * x;
+        } else {
+            res[i] = -( y * y);
+        }
+    }
+    return res;
+}
+```
+
+---
+## &lt;span style = "color:#88398A"&gt; Ejemplo sugar &lt;/span&gt;
+
+Una funcion en `R`: 
+
+```r
+compara &lt;- function(x, y) {
+ ifelse( x &lt; y, x*x, -(y*y) )
+}
+```
+
+su traduccion a `Rcpp`, con sugar
+
+```rcpp
+NumericVector compara1( NumericVector x, NumericVector y ) {
+  return ifelse( x &lt; y, x*x, -(y*y) ;
+}
+```
+---
+
+## &lt;span style = "color:#88398A"&gt;More sugar!&lt;/span&gt;
+
+Algunas funciones matemáticas:
+
+```c
+IntegerVector x;
+abs(x)
+exp(x)
+floor(x)
+ceil(x)
+pow(x, z) // $x^z$
+```
+---
+
+## &lt;span style = "color:#88398A"&gt;More sugar!&lt;/span&gt;
+Algunas funciones estadísticas:
+
+```c
+x1 = dnorm(y1, 0, 1); // densidad normal m = 0, sd = 1
+x2 = qnorm(y2, 0, 1); // cuantitle y2
+x3 = pnorm(y3, 0, 1); // distribución normal
+x4 = rnorm(n, 0, 1); //  valores aletorios de la normal
+```
+
+http://dirk.eddelbuettel.com/code/rcpp/Rcpp-sugar.pdf
+---
+
+## &lt;span style = "color:#88398A"&gt;RcppArmadillo&lt;/span&gt;
+
+- Armadillo es una librería para hacer álgebra lineal en C++ 
+
+- Syntaxis similar a Matlab
+
+- RcppArmadillo es la interface que conecta R con la librería  Armadillo de C++ (http://arma.sourceforge.net) 
+
+---
+
+## &lt;span style = "color:#88398A"&gt;RcppArmadillo&lt;/span&gt;
+
+```c
+// [[Rcpp::depends(RcppArmadillo)]]
+#include &lt;RcppArmadillo.h&gt; 
+using namespace Rcpp;
+using namespace arma;
+// [[Rcpp::export]]
+List fastLm( arma::mat X,  arma::colvec y) { int n = X.n_rows, k = X.n_cols;
+  colvec coef = solve(X, y); //ajusta y ~ X
+  colvec resid = y - X*coef; // residuos
+  double sig2 = as_scalar(trans(resid)*resid/(n-k));
+  colvec stderrest = sqrt(sig2 * diagvec( inv(trans(X)*X)) );
+  return List::create(Named("coefficients") = coef, Named("stderr") = stderrest, Named("df.residual") = n - k );
+}
+```
+---
+
+## &lt;span style = "color:#88398A"&gt;RcppArmadillo&lt;/span&gt;
+
+
+```r
+y &lt;- rnorm(20)
+x &lt;- matrix(rnorm(60), ncol=3, nrow=20)
+sourceCpp("lmRcpp.cpp")
+fastLm(x, y)
+```
+
+```
+## $coefficients
+##            [,1]
+## [1,] -0.1073669
+## [2,] -0.1231463
+## [3,] -0.1899230
+## 
+## $stderr
+##           [,1]
+## [1,] 0.2406242
+## [2,] 0.1831314
+## [3,] 0.1834587
+## 
+## $df.residual
+## [1] 17
+```
+---
+
+## &lt;span style = "color:#88398A"&gt; Vignettes en ‘Rcpp’&lt;/span&gt;
+
+
+Vignettes en ‘Rcpp’:
+
+- `Rcpp-attributes`     
+- `Rcpp-extending`      
+- `Rcpp-FAQ`            
+- `Rcpp-introduction`   
+- `Rcpp-jss-2011`       
+- `Rcpp-modules`        
+- `Rcpp-package`        
+- `Rcpp-quickref`       
+- `Rcpp-sugar`          
+- `Rcpp-unitTests`      
+
+
+```r
+vignette("Rcpp-attributes") 
+```
+---
+
+## &lt;span style = "color:#88398A"&gt; Galería de Rcpp&lt;/span&gt;
+
+- http://gallery.rcpp.org
+- https://stackoverflow.com/questions/tagged/rcpp
+- Libro:Seamless R and C++ integration with Rcpp
+---
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
